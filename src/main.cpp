@@ -28,13 +28,12 @@ extern "C" {
 	Function Prototypes
 ********************************************************************************/
 void initTimer2();
+void readAndSendTemperature();
 
 /********************************************************************************
 	Global Variables
 ********************************************************************************/
-volatile uint8_t reg1_flags = 0;
-
-volatile uint64_t endJob1Cicles = 0;
+volatile uint16_t timer2_count = 3600;
 
 RF24 radio;
 const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
@@ -96,7 +95,6 @@ int main(void) {
 
     radio.printDetails();
 
-    float temp;
     ds1820_init(DS1820_pin);
 
 	// main loop
@@ -107,30 +105,11 @@ int main(void) {
     	// Sleep mode to save battery, Timer 2 will wake up once each 8 seconds
 		sleep_mode();
 
-		// read temperature from DS1820 sensor
-	    temp = ds1820_read_temp(DS1820_pin);
-	    temp *= 10.00f;
-
-	    // take integer part of temperature
-	    int16_t temp_int = (int16_t) temp;
-
-	    // split temperature in two bytes
-	    uint8_t temp_low = (uint8_t) temp_int;
-	    uint8_t temp_high = (uint8_t) (temp_int>>8);
-
-	    debug_print("\n temp_int=%d", temp_int);
-	    debug_print("\n temp_high=%d", temp_high);
-	    debug_print("\n temp_low=%d", temp_low);
-
-	    int16_t temp_int_rec = (int16_t) (((temp_high & 0x00FF) << 8) | (temp_low & 0x00FF));
-	    debug_print("\n temp_int_rec=%d", temp_int_rec);
-
-	    // Send temperature via NRF24L01 transceiver
-		uint8_t data[] = {temp_high, temp_low};
-		radio.write(data, 2);
-
-		// Wait a little before going to sleep again
-	    _delay_ms(10);
+		// each hour send the data
+		if (++timer2_count > 3600) {
+			timer2_count = 0;
+			readAndSendTemperature();
+		}
     }
 }
 
@@ -153,6 +132,33 @@ void initTimer2() {
     TIFR2  = (1<<TOV2);
     //enable TOV2 interrupt
     TIMSK2  = (1<<TOIE2);
+}
+
+void readAndSendTemperature() {
+	// read temperature from DS1820 sensor
+    float temp = ds1820_read_temp(DS1820_pin);
+    temp *= 10.00f;
+
+    // take integer part of temperature
+    int16_t temp_int = (int16_t) temp;
+
+    // split temperature in two bytes
+    uint8_t temp_low = (uint8_t) temp_int;
+    uint8_t temp_high = (uint8_t) (temp_int>>8);
+
+    debug_print("\n temp_int=%d", temp_int);
+    debug_print("\n temp_high=%d", temp_high);
+    debug_print("\n temp_low=%d", temp_low);
+
+    //int16_t temp_int_rec = (int16_t) (((temp_high & 0x00FF) << 8) | (temp_low & 0x00FF));
+    //debug_print("\n temp_int_rec=%d", temp_int_rec);
+
+    // Send temperature via NRF24L01 transceiver
+	uint8_t data[] = {100, 1, temp_high, temp_low};
+	radio.write(data, 4);
+
+	// Wait a little before going to sleep again
+    _delay_ms(10);
 }
 
 void handle_usart_cmd(char *cmd, char *args) {
