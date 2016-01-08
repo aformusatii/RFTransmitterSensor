@@ -161,6 +161,8 @@ void readAndSendTemperature() {
 	radio.write(data, 4);
 
 	_delay_ms(10);
+	// need to flush tx buffer, fixed the issue with packet shift...
+	radio.stopListening();
     radio.powerDown();
 
 	// Wait a little before going to sleep again
