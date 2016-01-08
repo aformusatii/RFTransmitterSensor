@@ -106,7 +106,7 @@ int main(void) {
 		sleep_mode();
 
 		// each hour send the data
-		if (++timer2_count > 3600) {
+		if (++timer2_count >= 450) {
 			timer2_count = 0;
 			readAndSendTemperature();
 		}
@@ -153,9 +153,15 @@ void readAndSendTemperature() {
     //int16_t temp_int_rec = (int16_t) (((temp_high & 0x00FF) << 8) | (temp_low & 0x00FF));
     //debug_print("\n temp_int_rec=%d", temp_int_rec);
 
+    radio.powerUp();
+    _delay_ms(50);
+
     // Send temperature via NRF24L01 transceiver
 	uint8_t data[] = {100, 1, temp_high, temp_low};
 	radio.write(data, 4);
+
+	_delay_ms(10);
+    radio.powerDown();
 
 	// Wait a little before going to sleep again
     _delay_ms(10);
