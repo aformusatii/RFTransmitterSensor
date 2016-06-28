@@ -26,7 +26,5 @@ public:
 	uint8_t spiTransfer(uint8_t tx_);
 	void delayMicroseconds(uint64_t micros);
 	void delayMilliseconds(uint64_t milisec);
-	void startTimer();
-	uint16_t getElapsedTime();
 };
 

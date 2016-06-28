@@ -449,8 +449,7 @@ bool RF24::write( const void* buf, uint8_t len, const bool multicast )
   // Generally much faster.
   uint8_t observe_tx;
   uint8_t status;
-  HP.startTimer();
-  const uint16_t timeout = getMaxTimeout() ; //us to wait for timeout
+  uint16_t retry = 500;
 
   // Monitor the send
   do
@@ -458,7 +457,7 @@ bool RF24::write( const void* buf, uint8_t len, const bool multicast )
     status = read_register(OBSERVE_TX,&observe_tx,1);
     IF_SERIAL_DEBUG(printf_P(PSTR("observe_tx = %02x\r\n"),observe_tx));
   }
-  while( ! ( status & ( _BV(TX_DS) | _BV(MAX_RT) ) ) && ( HP.getElapsedTime() < timeout ) );
+  while( ! ( status & ( _BV(TX_DS) | _BV(MAX_RT) ) ) && ( retry-- > 1 ) );
 
   // The part above is what you could recreate with your own interrupt handler,
   // and then call this when you got an interrupt

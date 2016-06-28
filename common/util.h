@@ -23,11 +23,15 @@
 
 #define _between(actual,expected) (actual > (expected - 8)) & (actual < (expected + 8))
 
+#define clockCyclesPerMicrosecond() ( F_CPU/1000000 ) // Frequency / microseconds in one second
+#define clockCyclesToMicroseconds(a) ( (a) / clockCyclesPerMicrosecond() )
+#define microsecondsToClockCycles(a) ( (a) * clockCyclesPerMicrosecond() )
+
 #define CONSOLE_DEBUG 0
 
 #if CONSOLE_DEBUG == 1
 #define debug_print(...) \
-			printf(__VA_ARGS__)
+			printf("\n");printf(__VA_ARGS__)
 #else
 #define debug_print(...) \
 			do {} while (0)

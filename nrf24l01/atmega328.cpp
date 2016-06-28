@@ -23,8 +23,8 @@ void setup_io()
 // Set up SPI interface
 void setup_spi()
 {
-	/* Enable SPI, Master, set clock rate fck/16 */
-	SPCR = (1<<SPE)|(1<<MSTR)|(1<<SPR0);
+	/* Enable SPI, Master, set clock rate fck/4 */
+	SPCR = (1<<SPE)|(1<<MSTR)|(0<<SPR1)|(0<<SPR0);
 } // setup_spi
 
 /* ======================================================= */
@@ -58,16 +58,3 @@ uint8_t transfer_spi(uint8_t tx_)
 	/* Return data register */
 	return SPDR;
 } // transfer_spi
-
-/* ======================================================= */
-void __start_timer()
-{
-	startTime = getCurrentTimeCicles();
-}
-
-/* ======================================================= */
-uint16_t __millis()
-{
-	return (uint16_t) getElapsedMilliseconds(startTime);
-}
-

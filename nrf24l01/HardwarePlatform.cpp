@@ -28,11 +28,3 @@ void HardwarePlatform::delayMicroseconds(uint64_t micros) {
 void HardwarePlatform::delayMilliseconds(uint64_t milisec) {
 	_delay_ms(milisec);
 }
-
-void HardwarePlatform::startTimer() {
-	__start_timer();
-}
-
-uint16_t HardwarePlatform::getElapsedTime() {
-	return __millis();
-}
